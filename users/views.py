@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from .models import User
+from django.views.generic import ListView, DetailView
 
 class LoginView(View):
     def get(self, request):
@@ -36,14 +37,7 @@ class RegisterView(View):
         return render(request, 'users/signup.html', context=context)
 
     def post(self, request):
-        print(request.POST)
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password1']
-        password = request.POST['password2']
-        birthday = request.POST['date_of_birth']
         form = UserRegisterForm(request.POST)
-        # print(form)
         if form.is_valid():
             print('in validdddddddddddddddddddddddddddddddddddd')
             form.save()
@@ -54,3 +48,27 @@ def logout_user(request):
     _from = request.META.get('HTTP_REFERER')
     logout(request)
     return redirect(_from)
+
+
+class UsersListView(ListView):
+    model = User
+    template_name = 'users/users-list.html'
+    paginate_by = 10
+    context_object_name = 'users'
+
+class UserDetailView(DetailView):
+    model = User
+    template_name = 'users/user-detail.html'
+    context_object_name = 'user'
+
+
+class FollowView(View):
+    def get(self, request, pk):
+        user = User.objects.get(pk=pk)
+        follower = User.objects.get(pk=request.user.pk)
+        follower.follow.add(user)
+        request.user.save()
+        print(request.user.follow)
+        follower.follow.add(user)
+        follower.save()
+        return redirect(request.META['HTTP_REFERER'])

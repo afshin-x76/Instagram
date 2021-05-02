@@ -75,7 +75,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     profile_picture = models.ImageField(upload_to='profiles', null=True, blank=True)
     is_famous = models.BooleanField(default=False)
-    follow = models.ManyToManyField('self', related_name='follower', related_query_name='followers')
+    follow = models.ManyToManyField('self', related_name='follower', related_query_name='followers', null=True, blank=True)
 
     objects = MyUserManager()
 
@@ -109,4 +109,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         "Does the user have permissions to view the app `app_label`?"
         return True
-
+    @property
+    def get_follower_number(self):
+        count = self.follow.count()
+        return count
